@@ -4,11 +4,8 @@ namespace BOMA.RTR.Api.RogerFiles;
 
 public class RogerFileModel
 {
-    [Index(0)]
-    public string? RogerEventName { get; set; }
-    
     [Index(1)]
-    public RecordEventType? RogerEventType { get; set; }
+    public RecordEventType? EventType { get; set; }
     
     [Index(2)]
     public string? UserId { get; set; }
@@ -28,7 +25,7 @@ public class RogerFileModel
     [Index(7)]
     public TimeSpan? Time { get; set; }
 
-    public bool IsValid() => RogerEventType.HasValue && RogerEventType.Value is not RecordEventType.None && !string.IsNullOrEmpty(UserId);
+    public bool IsValid() => EventType.HasValue && EventType.Value is not RecordEventType.None && !string.IsNullOrEmpty(UserId);
 }
 
 public enum RecordEventType
