@@ -1,9 +1,16 @@
+using BOMA.RTR.Api.RogerFiles;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHealthChecks();
+builder.Services.AddCors();
+
+builder.Services.Configure<RogerFileConfiguration>(builder.Configuration.GetSection(RogerFileConfiguration.Location));
+builder.Services.AddTransient<IRogerFileService, RogerFileService>();
 
 var app = builder.Build();
 
@@ -14,7 +21,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(x => x
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+
 app.UseHttpsRedirection();
+
+app.UseHealthChecks("/healthz");
 
 var summaries = new[]
 {
@@ -36,9 +50,18 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
+app.MapGet("/entryExitTimes", (IRogerFileService rogerFileService) =>
+    {
+        var records = rogerFileService.ParseRecords();
+        
+        return records;
+    })
+.WithName("GetEntryExitTimes")
+.WithOpenApi();
+
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }

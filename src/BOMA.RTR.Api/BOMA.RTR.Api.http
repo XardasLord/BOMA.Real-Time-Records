@@ -3,4 +3,7 @@
 GET {{BOMA.RTR.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
+GET {{BOMA.RTR.Api_HostAddress}}/entryExitTimes/
+Accept: application/json
+
 ###
