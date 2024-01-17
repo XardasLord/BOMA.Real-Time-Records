@@ -1,6 +1,6 @@
 export interface RecordModel {
   userRcpId: number;
-  date: Date;
+  date: string;
   time: string;
   eventType: RecordEventType;
 }

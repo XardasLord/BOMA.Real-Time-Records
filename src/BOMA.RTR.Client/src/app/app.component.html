@@ -1,7 +1,11 @@
-<div class="columns-3">
-  @for (record of entryExitRecords$ | async; track record) {
-    <div class="w-full">{{ record?.userRcpId }} - {{ record?.eventType }}</div>
-    <div class="w-full">{{ record?.date }}</div>
-    <div class="w-full">{{ record?.time }}</div>
-  }
-</div>
+@for (record of entryExitRecords$ | async; track record) {
+  <div class="columns-3 border-b text-center align-middle">
+    <div class="w-full border-r text-4xl">{{ record.userRcpId }}&nbsp;</div>
+    <div class="w-full border-r">
+      {{ record.entryDate }} {{ record.entryTime }}&nbsp;
+    </div>
+    <div class="w-full border-r">
+      {{ record.exitDate }} {{ record.exitTime }}&nbsp;
+    </div>
+  </div>
+}
