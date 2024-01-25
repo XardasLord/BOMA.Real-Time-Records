@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { filter, groupBy, map, mergeMap, Observable, toArray } from 'rxjs';
+import { groupBy, map, mergeMap, Observable, toArray } from 'rxjs';
 import { RecordEventType, RecordModel } from './models/record.model';
 import { environment } from '../environments/environment';
 
@@ -14,12 +14,26 @@ import { environment } from '../environments/environment';
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
-  entryExitRecords$!: Observable<EntryExitRecordsGrouped[]>;
+  entryExitPairRecords$!: Observable<EntryExitRecordsGrouped[][]>;
 
   constructor(private httpClient: HttpClient) {}
 
   ngOnInit(): void {
-    this.entryExitRecords$ = this.getEntryExitRecordsGrouped();
+    this.entryExitPairRecords$ = this.getEntryExitRecordsGrouped().pipe(
+      map(groupedRecords => {
+        return groupedRecords.reduce<EntryExitRecordsGrouped[][]>(
+          (acc, record, index) => {
+            if (index % 2 === 0) {
+              acc.push([record]); // Rozpoczyna nową parę
+            } else {
+              acc[acc.length - 1].push(record); // Dodaje do istniejącej pary
+            }
+            return acc;
+          },
+          []
+        );
+      })
+    );
   }
 
   private getEntryExitRecordsGrouped(): Observable<EntryExitRecordsGrouped[]> {
@@ -57,8 +71,9 @@ export class AppComponent implements OnInit {
         map(x =>
           x.filter(
             e =>
-              e.eventType === RecordEventType.Entry ||
-              e.eventType === RecordEventType.Exit
+              (e.eventType === RecordEventType.Entry ||
+                e.eventType === RecordEventType.Exit) &&
+              e.userRcpId
           )
         )
       );
