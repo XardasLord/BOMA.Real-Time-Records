@@ -1,4 +1,5 @@
 using BOMA.RTR.Api.RogerFiles;
+using BOMA.RTR.Api.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +10,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 builder.Services.AddCors();
 
+// Roger
 builder.Services.Configure<RogerFileConfiguration>(builder.Configuration.GetSection(RogerFileConfiguration.Location));
 builder.Services.AddTransient<IRogerFileService, RogerFileService>();
+
+// SignalR
+builder.Services.AddSignalR();
+builder.Services.Configure<SignalROptions>(builder.Configuration.GetRequiredSection(SignalRConfigurationFileConst.SignalRConfigSection));
+builder.Services.AddTransient<INotificationsService, SignalRNotificationsService>();
 
 var app = builder.Build();
 
@@ -38,5 +45,10 @@ app.MapGet("/entryExitTimes", (IRogerFileService rogerFileService) =>
     })
 .WithName("GetEntryExitTimes")
 .WithOpenApi();
+
+var notificationHubEndpoint = builder.Configuration.GetRequiredSection(SignalRConfigurationFileConst.SignalRConfigSection)
+    [SignalRConfigurationFileConst.HubEndpointConfigKey];
+
+app.MapHub<SignalRNotificationsHub>(notificationHubEndpoint!);
 
 app.Run();
