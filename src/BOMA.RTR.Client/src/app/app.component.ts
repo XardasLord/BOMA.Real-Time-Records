@@ -1,89 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { groupBy, map, mergeMap, Observable, toArray } from 'rxjs';
-import { RecordEventType, RecordModel } from './models/record.model';
-import { environment } from '../environments/environment';
+import { Store } from '@ngxs/store';
+import { Observable } from 'rxjs';
+import { EntryExitRecordsGrouped } from './models/record.model';
+import { Load } from './state/roger.action';
+import { StartWebsocketConnection } from './state/notifications.action';
+import { RogerState } from './state/roger.state';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HttpClientModule],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
   entryExitPairRecords$!: Observable<EntryExitRecordsGrouped[][]>;
 
-  constructor(private httpClient: HttpClient) {}
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.entryExitPairRecords$ = this.getEntryExitRecordsGrouped().pipe(
-      map(groupedRecords => {
-        return groupedRecords.reduce<EntryExitRecordsGrouped[][]>(
-          (acc, record, index) => {
-            if (index % 2 === 0) {
-              acc.push([record]); // Rozpoczyna nową parę
-            } else {
-              acc[acc.length - 1].push(record); // Dodaje do istniejącej pary
-            }
-            return acc;
-          },
-          []
-        );
-      })
+    this.store.dispatch([new StartWebsocketConnection(), new Load()]);
+
+    this.entryExitPairRecords$ = this.store.select(
+      RogerState.getGroupedRecords
     );
   }
-
-  private getEntryExitRecordsGrouped(): Observable<EntryExitRecordsGrouped[]> {
-    return this.getEntryExitRecords().pipe(
-      mergeMap(records => records),
-      groupBy(record => ({
-        id: record.userRcpId,
-        day: new Date(record.date).toDateString(),
-      })),
-      mergeMap(group => group.pipe(toArray())),
-      map(groupedRecords => {
-        const entry = groupedRecords.find(
-          record => record.eventType === RecordEventType.Entry
-        );
-        const exit = groupedRecords.find(
-          record => record.eventType === RecordEventType.Exit
-        );
-
-        return {
-          userRcpId: groupedRecords[0].userRcpId,
-          entryDate: entry ? entry.date : '',
-          entryTime: entry ? entry.time : '',
-          exitDate: exit ? exit.date : '',
-          exitTime: exit ? exit.time : '',
-        };
-      }),
-      toArray()
-    );
-  }
-
-  private getEntryExitRecords(): Observable<RecordModel[]> {
-    return this.httpClient
-      .get<RecordModel[]>(`${environment.apiEndpoint}/entryExitTimes`)
-      .pipe(
-        map(x =>
-          x.filter(
-            e =>
-              (e.eventType === RecordEventType.Entry ||
-                e.eventType === RecordEventType.Exit) &&
-              e.userRcpId
-          )
-        )
-      );
-  }
-}
-
-export interface EntryExitRecordsGrouped {
-  userRcpId: number;
-  entryDate: string;
-  entryTime: string;
-  exitDate: string;
-  exitTime: string;
 }
