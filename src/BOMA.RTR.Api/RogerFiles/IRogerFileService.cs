@@ -3,4 +3,5 @@
 public interface IRogerFileService
 {
     IEnumerable<RogerFileModel> ParseRecords();
+    void RegisterFileWatcher();
 }

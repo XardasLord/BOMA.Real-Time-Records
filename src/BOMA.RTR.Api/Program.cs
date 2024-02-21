@@ -12,7 +12,7 @@ builder.Services.AddCors();
 
 // Roger
 builder.Services.Configure<RogerFileConfiguration>(builder.Configuration.GetSection(RogerFileConfiguration.Location));
-builder.Services.AddTransient<IRogerFileService, RogerFileService>();
+builder.Services.AddSingleton<IRogerFileService, RogerFileService>();
 
 // SignalR
 builder.Services.AddSignalR();
@@ -50,5 +50,8 @@ var notificationHubEndpoint = builder.Configuration.GetRequiredSection(SignalRCo
     [SignalRConfigurationFileConst.HubEndpointConfigKey];
 
 app.MapHub<SignalRNotificationsHub>(notificationHubEndpoint!);
+
+var rogerFileService = app.Services.GetRequiredService<IRogerFileService>();
+rogerFileService.RegisterFileWatcher();
 
 app.Run();
