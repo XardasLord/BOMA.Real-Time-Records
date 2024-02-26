@@ -4,7 +4,7 @@ export const environment = {
   production: true,
 
   appVersion: `${APP_VERSION}`,
-  apiEndpoint: 'http://192.168.0.161:83',
+  apiEndpoint: 'http://192.168.0.161:91',
 
-  signalRHubEndpoint: 'http://192.168.0.161:83/notificationsHub',
+  signalRHubEndpoint: 'http://192.168.0.161:91/notificationsHub',
 };
