@@ -45,6 +45,8 @@ public class RogerFileService : IRogerFileService
             records.AddRange(results);
         }
 
+        records = records.OrderByDescending(x => x.Date).ToList();
+
         return records;
     }
 
