@@ -16,7 +16,7 @@ import { RogerState } from './state/roger.state';
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
-  entryExitPairRecords$!: Observable<EntryExitRecordsGrouped[][]>;
+  entryExitPairRecords$!: Observable<EntryExitRecordsGrouped[]>;
 
   constructor(private store: Store) {}
 

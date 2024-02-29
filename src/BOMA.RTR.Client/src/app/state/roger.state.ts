@@ -33,9 +33,7 @@ export class RogerState {
   }
 
   @Selector([ROGER_STATE_TOKEN])
-  static getGroupedRecords(
-    state: RogerStateModel
-  ): EntryExitRecordsGrouped[][] {
+  static getGroupedRecords(state: RogerStateModel): EntryExitRecordsGrouped[] {
     const groupedRecords = state.records.reduce<{
       [key: string]: RecordModel[];
     }>((acc, record) => {
@@ -51,7 +49,7 @@ export class RogerState {
       return acc;
     }, {});
 
-    const result = Object.values(groupedRecords).map(group => {
+    const resultRecords = Object.values(groupedRecords).map(group => {
       const entry = group.find(
         record => record.eventType === RecordEventType.Entry
       );
@@ -68,34 +66,29 @@ export class RogerState {
       };
     });
 
-    const entryExitPairRecords = Object.values(groupedRecords).reduce<
-      EntryExitRecordsGrouped[][]
-    >((acc, group) => {
-      // Przekształć grupę w EntryExitRecordsGrouped
-      const entry = group.find(
-        record => record.eventType === RecordEventType.Entry
-      );
-      const exit = group.find(
-        record => record.eventType === RecordEventType.Exit
-      );
+    // Sorting by entry datetime desc firstly
+    resultRecords.sort((a, b) => {
+      const datePartA = a.entryDate.split('T')[0];
+      const datePartB = b.entryDate.split('T')[0];
 
-      const transformedGroup: EntryExitRecordsGrouped = {
-        userRcpId: group[0]?.userRcpId,
-        entryDate: entry ? entry.date : '',
-        entryTime: entry ? entry.time : '',
-        exitDate: exit ? exit.date : '',
-        exitTime: exit ? exit.time : '',
-      };
+      const dateTimeA = new Date(`${datePartA}T${a.entryTime}`);
+      const dateTimeB = new Date(`${datePartB}T${b.entryTime}`);
 
-      if (acc.length === 0 || acc[acc.length - 1].length === 2) {
-        acc.push([transformedGroup]); // Rozpoczyna nową parę
-      } else {
-        acc[acc.length - 1].push(transformedGroup); // Dodaje do istniejącej pary
-      }
-      return acc;
-    }, []);
+      return dateTimeB.getTime() - dateTimeA.getTime();
+    });
 
-    return entryExitPairRecords;
+    // Sorting by exit datetime desc lastly
+    resultRecords.sort((a, b) => {
+      const datePartA = a.exitDate.split('T')[0];
+      const datePartB = b.exitDate.split('T')[0];
+
+      const dateTimeA = new Date(`${datePartA}T${a.exitTime}`);
+      const dateTimeB = new Date(`${datePartB}T${b.exitTime}`);
+
+      return dateTimeB.getTime() - dateTimeA.getTime();
+    });
+
+    return resultRecords;
   }
 
   @Action(Load)
@@ -106,9 +99,9 @@ export class RogerState {
         map(x =>
           x.filter(
             e =>
-              (e.eventType === RecordEventType.Entry ||
-                e.eventType === RecordEventType.Exit) &&
-              e.userRcpId
+              [RecordEventType.Entry, RecordEventType.Exit].includes(
+                e.eventType
+              ) && e.userRcpId
           )
         ),
         tap(records => {

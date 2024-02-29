@@ -34,16 +34,10 @@ public class RogerFileService : IRogerFileService
         var records = new List<RogerFileModel>();
         
         if (files.Length < 1)
-        {
             return records;
-        }
         
         foreach (var csvFile in files)
-        {
-            var results = ParseCsv(csvFile);
-
-            records.AddRange(results);
-        }
+            records.AddRange(ParseCsv(csvFile));
 
         records = records.OrderByDescending(x => x.Date).ToList();
 
@@ -77,9 +71,7 @@ public class RogerFileService : IRogerFileService
 
     private void RogerFileUpdated(object sender, FileSystemEventArgs e)
     {
-        Console.WriteLine("RogerFileUpdated");
         var records = ParseRecords();
-        Console.WriteLine(records);
 
         _notificationsService.SendNewRogerFileNotification(records);
     }
