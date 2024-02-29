@@ -2,6 +2,6 @@
 
 public class SignalROptions
 {
-    public string HubEndpoint { get; set; }
-    public string NotificationMethodName { get; set; }
+    public required string HubEndpoint { get; set; }
+    public required string NotificationMethodName { get; set; }
 }

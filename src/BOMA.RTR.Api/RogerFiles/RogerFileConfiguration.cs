@@ -4,6 +4,6 @@ public class RogerFileConfiguration
 {
     public const string Location = "Roger";
 
-    public string FileLocation { get; set; }
-    public string FileName { get; set; }
+    public required string FileLocation { get; set; }
+    public required string FileName { get; set; }
 }
