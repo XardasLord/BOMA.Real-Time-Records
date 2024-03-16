@@ -1,15 +1,15 @@
-import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { patch } from '@ngxs/store/operators';
+import { map, Observable, tap } from 'rxjs';
 import {
   EntryExitRecordsGrouped,
   RecordEventType,
   RecordModel,
 } from '../models/record.model';
 import { Changed, Load } from './roger.action';
-import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { map, Observable, tap } from 'rxjs';
 
 export interface RogerStateModel {
   records: RecordModel[];
@@ -96,14 +96,7 @@ export class RogerState {
     return this.httpClient
       .get<RecordModel[]>(`${environment.apiEndpoint}/entryExitTimes`)
       .pipe(
-        map(x =>
-          x.filter(
-            e =>
-              [RecordEventType.Entry, RecordEventType.Exit].includes(
-                e.eventType
-              ) && e.userRcpId
-          )
-        ),
+        map(x => this.filterRecords(x)),
         tap(records => {
           ctx.setState(
             patch({
@@ -118,8 +111,17 @@ export class RogerState {
   changed(ctx: StateContext<RogerStateModel>, action: Changed) {
     ctx.setState(
       patch({
-        records: action.records,
+        records: this.filterRecords(action.records),
       })
+    );
+  }
+
+  private filterRecords(records: RecordModel[]) {
+    return records.filter(
+      x =>
+        [RecordEventType.Entry, RecordEventType.Exit].includes(x.eventType) &&
+        x.userRcpId &&
+        ![6, 0].includes(new Date(x.date).getDay()) // Dodanie warunku odfiltrowania sobót i niedziel
     );
   }
 }
