@@ -16,15 +16,15 @@ import { RogerState } from './state/roger.state';
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
-  entryExitPairRecords$!: Observable<EntryExitRecordsGrouped[][]>;
+  entryExitPairRecordsInHall$!: Observable<EntryExitRecordsGrouped[][]>;
 
   constructor(private store: Store) {}
 
   ngOnInit(): void {
     this.store.dispatch([new StartWebsocketConnection(), new Load()]);
 
-    this.entryExitPairRecords$ = this.store.select(
-      RogerState.getGroupedRecords
+    this.entryExitPairRecordsInHall$ = this.store.select(
+      RogerState.getGroupedRecordsForHall
     );
   }
 }

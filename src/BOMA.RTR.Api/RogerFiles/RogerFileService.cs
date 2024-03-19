@@ -66,7 +66,7 @@ public class RogerFileService : IRogerFileService
             TrimOptions = TrimOptions.Trim
         });
         
-        return csv.GetRecords<RogerFileModel>().ToList();
+        return csv.GetRecords<RogerFileModel>().Where(x => x.IsValid()).ToList();
     }
 
     private void RogerFileUpdated(object sender, FileSystemEventArgs e)

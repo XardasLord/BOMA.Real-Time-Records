@@ -4,6 +4,7 @@ import { Action, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { patch } from '@ngxs/store/operators';
 import { map, Observable, tap } from 'rxjs';
 import {
+  DepartmentType,
   EntryExitRecordsGrouped,
   RecordEventType,
   RecordModel,
@@ -12,7 +13,8 @@ import { Changed, Load } from './roger.action';
 import { environment } from '../../environments/environment';
 
 export interface RogerStateModel {
-  records: RecordModel[];
+  recordsAll: RecordModel[];
+  recordsInHall: RecordModel[];
 }
 
 const ROGER_STATE_TOKEN = new StateToken<RogerStateModel>('roger');
@@ -20,7 +22,8 @@ const ROGER_STATE_TOKEN = new StateToken<RogerStateModel>('roger');
 @State<RogerStateModel>({
   name: ROGER_STATE_TOKEN,
   defaults: {
-    records: [],
+    recordsAll: [],
+    recordsInHall: [],
   },
 })
 @Injectable()
@@ -28,15 +31,15 @@ export class RogerState {
   constructor(private httpClient: HttpClient) {}
 
   @Selector([ROGER_STATE_TOKEN])
-  static getRecords(state: RogerStateModel): RecordModel[] {
-    return state.records;
+  static getAllRecords(state: RogerStateModel): RecordModel[] {
+    return state.recordsAll;
   }
 
   @Selector([ROGER_STATE_TOKEN])
-  static getGroupedRecords(
+  static getGroupedRecordsForHall(
     state: RogerStateModel
   ): EntryExitRecordsGrouped[][] {
-    const groupedRecords = state.records.reduce<{
+    const groupedRecords = state.recordsInHall.reduce<{
       [key: string]: RecordModel[];
     }>((acc, record) => {
       const day = new Date(record.date).toDateString();
@@ -101,8 +104,6 @@ export class RogerState {
       }
     });
 
-    console.log(transformedRecords);
-
     return transformedRecords;
   }
 
@@ -115,7 +116,10 @@ export class RogerState {
         tap(records => {
           ctx.setState(
             patch({
-              records: records,
+              recordsAll: records,
+              recordsInHall: records.filter(
+                x => x.departmentType === DepartmentType.Magazyn
+              ),
             })
           );
         })
@@ -126,17 +130,17 @@ export class RogerState {
   changed(ctx: StateContext<RogerStateModel>, action: Changed) {
     ctx.setState(
       patch({
-        records: this.filterRecords(action.records),
+        recordsAll: this.filterRecords(action.records),
+        recordsInHall: this.filterRecords(action.records).filter(
+          x => x.departmentType === DepartmentType.Magazyn
+        ),
       })
     );
   }
 
   private filterRecords(records: RecordModel[]) {
     return records.filter(
-      x =>
-        [RecordEventType.Entry, RecordEventType.Exit].includes(x.eventType) &&
-        x.userRcpId &&
-        ![6, 0].includes(new Date(x.date).getDay()) // Dodanie warunku odfiltrowania sobót i niedziel
+      x => ![6, 0].includes(new Date(x.date).getDay()) // Dodanie warunku odfiltrowania sobót i niedziel
     );
   }
 }

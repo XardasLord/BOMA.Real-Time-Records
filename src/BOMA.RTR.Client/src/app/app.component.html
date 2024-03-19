@@ -7,7 +7,10 @@
       <div class="w-full border-r-2 border-r-gray-900">Godzina wyjścia</div>
     </div>
 
-    @for (pairRecord of (entryExitPairRecords$ | async)![0]; track pairRecord) {
+    @for (
+      pairRecord of (entryExitPairRecordsInHall$ | async)![0];
+      track pairRecord
+    ) {
       <div class="columns-3 border-b text-center text-2xl h-8 items-center">
         <div class="w-full border-r font-bold">
           {{ pairRecord?.userRcpId }}&nbsp;
@@ -32,7 +35,10 @@
       <div class="w-full border-r">Godzina wyjścia</div>
     </div>
 
-    @for (pairRecord of (entryExitPairRecords$ | async)![1]; track pairRecord) {
+    @for (
+      pairRecord of (entryExitPairRecordsInHall$ | async)![1];
+      track pairRecord
+    ) {
       <div class="columns-3 border-b text-center text-2xl h-8 items-center">
         <div class="w-full border-r font-bold">
           {{ pairRecord?.userRcpId }}&nbsp;
