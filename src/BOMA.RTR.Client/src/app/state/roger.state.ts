@@ -33,7 +33,9 @@ export class RogerState {
   }
 
   @Selector([ROGER_STATE_TOKEN])
-  static getGroupedRecords(state: RogerStateModel): EntryExitRecordsGrouped[] {
+  static getGroupedRecords(
+    state: RogerStateModel
+  ): EntryExitRecordsGrouped[][] {
     const groupedRecords = state.records.reduce<{
       [key: string]: RecordModel[];
     }>((acc, record) => {
@@ -88,7 +90,20 @@ export class RogerState {
       return dateTimeB.getTime() - dateTimeA.getTime();
     });
 
-    return resultRecords;
+    // Converting to [][] array
+    const transformedRecords: EntryExitRecordsGrouped[][] = [[], []];
+
+    resultRecords.forEach((record, index) => {
+      if (index % 2 === 0) {
+        transformedRecords[0].push(record);
+      } else {
+        transformedRecords[1].push(record);
+      }
+    });
+
+    console.log(transformedRecords);
+
+    return transformedRecords;
   }
 
   @Action(Load)

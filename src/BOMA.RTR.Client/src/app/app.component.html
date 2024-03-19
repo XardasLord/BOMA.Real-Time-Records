@@ -1,22 +1,51 @@
-<div
-  class="columns-3 border-b text-center text-2xl font-bold bg-amber-100 h-8 flex items-center">
-  <div class="w-full border-r">RCP ID</div>
-  <div class="w-full border-r">Godzina wejścia</div>
-  <div class="w-full border-r">Godzina wyjścia</div>
-</div>
+<div class="flex flex-row">
+  <div class="basis-1/2">
+    <div
+      class="columns-3 border-b text-center text-2xl font-bold bg-amber-100 h-8 items-center">
+      <div class="w-full border-r">RCP ID</div>
+      <div class="w-full border-r">Godzina wejścia</div>
+      <div class="w-full border-r-2 border-r-gray-900">Godzina wyjścia</div>
+    </div>
 
-@for (pairRecord of entryExitPairRecords$ | async; track pairRecord) {
-  <div class="columns-3 border-b text-center text-2xl h-8 flex items-center">
-    <div class="w-full border-r font-bold">
-      {{ pairRecord?.userRcpId }}&nbsp;
-    </div>
-    <div class="w-full border-r">
-      {{ pairRecord?.entryDate | date: 'dd-MM-yyyy' }}
-      {{ pairRecord?.entryTime }}&nbsp;
-    </div>
-    <div class="w-full border-r">
-      {{ pairRecord?.exitDate | date: 'dd-MM-yyyy' }}
-      {{ pairRecord?.exitTime }}&nbsp;
-    </div>
+    @for (pairRecord of (entryExitPairRecords$ | async)![0]; track pairRecord) {
+      <div class="columns-3 border-b text-center text-2xl h-8 items-center">
+        <div class="w-full border-r font-bold">
+          {{ pairRecord?.userRcpId }}&nbsp;
+        </div>
+        <div class="w-full border-r">
+          {{ pairRecord?.entryDate | date: 'dd-MM-yyyy' }}
+          {{ pairRecord?.entryTime }}&nbsp;
+        </div>
+        <div class="w-full border-r-2 border-r-amber-900">
+          {{ pairRecord?.exitDate | date: 'dd-MM-yyyy' }}
+          {{ pairRecord?.exitTime }}&nbsp;
+        </div>
+      </div>
+    }
   </div>
-}
+
+  <div class="basis-1/2">
+    <div
+      class="columns-3 border-b text-center text-2xl font-bold bg-amber-100 h-8 items-center">
+      <div class="w-full border-r">RCP ID</div>
+      <div class="w-full border-r">Godzina wejścia</div>
+      <div class="w-full border-r">Godzina wyjścia</div>
+    </div>
+
+    @for (pairRecord of (entryExitPairRecords$ | async)![1]; track pairRecord) {
+      <div class="columns-3 border-b text-center text-2xl h-8 items-center">
+        <div class="w-full border-r font-bold">
+          {{ pairRecord?.userRcpId }}&nbsp;
+        </div>
+        <div class="w-full border-r">
+          {{ pairRecord?.entryDate | date: 'dd-MM-yyyy' }}
+          {{ pairRecord?.entryTime }}&nbsp;
+        </div>
+        <div class="w-full border-r">
+          {{ pairRecord?.exitDate | date: 'dd-MM-yyyy' }}
+          {{ pairRecord?.exitTime }}&nbsp;
+        </div>
+      </div>
+    }
+  </div>
+</div>
