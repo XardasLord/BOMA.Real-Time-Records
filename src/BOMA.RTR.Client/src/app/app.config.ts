@@ -10,6 +10,7 @@ import { environment } from '../environments/environment';
 import { WebsocketNotificationsService } from './signalr/websocket-notifications.service';
 import { RogerState } from './state/roger.state';
 import { provideHttpClient } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,6 +30,6 @@ export const appConfig: ApplicationConfig = {
       NgxsReduxDevtoolsPluginModule.forRoot()
     ),
     provideHttpClient(),
-    WebsocketNotificationsService,
+    WebsocketNotificationsService, provideAnimationsAsync(),
   ],
 };

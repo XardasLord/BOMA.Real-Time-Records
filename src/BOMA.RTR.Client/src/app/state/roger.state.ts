@@ -14,7 +14,8 @@ import { environment } from '../../environments/environment';
 
 export interface RogerStateModel {
   recordsAll: RecordModel[];
-  recordsInHall: RecordModel[];
+  recordsOnHall: RecordModel[];
+  recordsOnProduction: RecordModel[];
 }
 
 const ROGER_STATE_TOKEN = new StateToken<RogerStateModel>('roger');
@@ -23,7 +24,8 @@ const ROGER_STATE_TOKEN = new StateToken<RogerStateModel>('roger');
   name: ROGER_STATE_TOKEN,
   defaults: {
     recordsAll: [],
-    recordsInHall: [],
+    recordsOnHall: [],
+    recordsOnProduction: [],
   },
 })
 @Injectable()
@@ -39,7 +41,18 @@ export class RogerState {
   static getGroupedRecordsForHall(
     state: RogerStateModel
   ): EntryExitRecordsGrouped[][] {
-    const groupedRecords = state.recordsInHall.reduce<{
+    return this.groupRecords(state.recordsOnHall);
+  }
+
+  @Selector([ROGER_STATE_TOKEN])
+  static getGroupedRecordsForProduction(
+    state: RogerStateModel
+  ): EntryExitRecordsGrouped[][] {
+    return this.groupRecords(state.recordsOnProduction);
+  }
+
+  private static groupRecords(records: RecordModel[]) {
+    const groupedRecords = records.reduce<{
       [key: string]: RecordModel[];
     }>((acc, record) => {
       const day = new Date(record.date).toDateString();
@@ -117,8 +130,11 @@ export class RogerState {
           ctx.setState(
             patch({
               recordsAll: records,
-              recordsInHall: records.filter(
+              recordsOnHall: records.filter(
                 x => x.departmentType === DepartmentType.Magazyn
+              ),
+              recordsOnProduction: records.filter(
+                x => x.departmentType === DepartmentType.Produkcja
               ),
             })
           );
@@ -131,8 +147,11 @@ export class RogerState {
     ctx.setState(
       patch({
         recordsAll: this.filterRecords(action.records),
-        recordsInHall: this.filterRecords(action.records).filter(
+        recordsOnHall: this.filterRecords(action.records).filter(
           x => x.departmentType === DepartmentType.Magazyn
+        ),
+        recordsOnProduction: this.filterRecords(action.records).filter(
+          x => x.departmentType === DepartmentType.Produkcja
         ),
       })
     );

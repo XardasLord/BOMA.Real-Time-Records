@@ -1,30 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { Store } from '@ngxs/store';
-import { Observable } from 'rxjs';
-import { EntryExitRecordsGrouped } from './models/record.model';
-import { Load } from './state/roger.action';
-import { StartWebsocketConnection } from './state/notifications.action';
-import { RogerState } from './state/roger.state';
+import { MatTabsModule } from '@angular/material/tabs';
+import { TableWithRecordsComponent } from './components/table-with-records/table-with-records.component';
+import { DepartmentType } from './models/record.model';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    MatTabsModule,
+    TableWithRecordsComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
-export class AppComponent implements OnInit {
-  entryExitPairRecordsInHall$!: Observable<EntryExitRecordsGrouped[][]>;
-
-  constructor(private store: Store) {}
-
-  ngOnInit(): void {
-    this.store.dispatch([new StartWebsocketConnection(), new Load()]);
-
-    this.entryExitPairRecordsInHall$ = this.store.select(
-      RogerState.getGroupedRecordsForHall
-    );
-  }
+export class AppComponent {
+  protected readonly DepartmentType = DepartmentType;
 }
