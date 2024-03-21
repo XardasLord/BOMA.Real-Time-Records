@@ -14,8 +14,8 @@ import { environment } from '../../environments/environment';
 
 export interface RogerStateModel {
   recordsAll: RecordModel[];
-  recordsOnHall: RecordModel[];
-  recordsOnProduction: RecordModel[];
+  recordsForProduction: RecordModel[];
+  recordsForManager: RecordModel[];
 }
 
 const ROGER_STATE_TOKEN = new StateToken<RogerStateModel>('roger');
@@ -24,12 +24,24 @@ const ROGER_STATE_TOKEN = new StateToken<RogerStateModel>('roger');
   name: ROGER_STATE_TOKEN,
   defaults: {
     recordsAll: [],
-    recordsOnHall: [],
-    recordsOnProduction: [],
+    recordsForProduction: [],
+    recordsForManager: [],
   },
 })
 @Injectable()
 export class RogerState {
+  productionHallRelatedDepartments = [
+    DepartmentType.Produkcja,
+    DepartmentType.Pakowanie,
+    DepartmentType.Zlecenia,
+    DepartmentType.Boma,
+  ];
+
+  warehouseRelatedDepartments = [
+    DepartmentType.Magazyn,
+    DepartmentType.Akcesoria,
+  ];
+
   constructor(private httpClient: HttpClient) {}
 
   @Selector([ROGER_STATE_TOKEN])
@@ -38,17 +50,17 @@ export class RogerState {
   }
 
   @Selector([ROGER_STATE_TOKEN])
-  static getGroupedRecordsForHall(
-    state: RogerStateModel
-  ): EntryExitRecordsGrouped[][] {
-    return this.groupRecords(state.recordsOnHall);
-  }
-
-  @Selector([ROGER_STATE_TOKEN])
   static getGroupedRecordsForProduction(
     state: RogerStateModel
   ): EntryExitRecordsGrouped[][] {
-    return this.groupRecords(state.recordsOnProduction);
+    return this.groupRecords(state.recordsForProduction);
+  }
+
+  @Selector([ROGER_STATE_TOKEN])
+  static getGroupedRecordsForManager(
+    state: RogerStateModel
+  ): EntryExitRecordsGrouped[][] {
+    return this.groupRecords(state.recordsForManager);
   }
 
   private static groupRecords(records: RecordModel[]) {
@@ -130,11 +142,11 @@ export class RogerState {
           ctx.setState(
             patch({
               recordsAll: records,
-              recordsOnHall: records.filter(
-                x => x.departmentType === DepartmentType.Magazyn
+              recordsForProduction: records.filter(x =>
+                this.productionHallRelatedDepartments.includes(x.departmentType)
               ),
-              recordsOnProduction: records.filter(
-                x => x.departmentType === DepartmentType.Produkcja
+              recordsForManager: records.filter(x =>
+                this.warehouseRelatedDepartments.includes(x.departmentType)
               ),
             })
           );
@@ -144,14 +156,16 @@ export class RogerState {
 
   @Action(Changed)
   changed(ctx: StateContext<RogerStateModel>, action: Changed) {
+    const records = this.filterRecords(action.records);
+
     ctx.setState(
       patch({
-        recordsAll: this.filterRecords(action.records),
-        recordsOnHall: this.filterRecords(action.records).filter(
-          x => x.departmentType === DepartmentType.Magazyn
+        recordsAll: records,
+        recordsForProduction: records.filter(x =>
+          this.productionHallRelatedDepartments.includes(x.departmentType)
         ),
-        recordsOnProduction: this.filterRecords(action.records).filter(
-          x => x.departmentType === DepartmentType.Produkcja
+        recordsForManager: records.filter(x =>
+          this.warehouseRelatedDepartments.includes(x.departmentType)
         ),
       })
     );

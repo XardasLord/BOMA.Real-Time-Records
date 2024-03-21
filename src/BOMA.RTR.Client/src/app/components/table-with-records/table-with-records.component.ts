@@ -28,14 +28,14 @@ export class TableWithRecordsComponent implements OnInit {
     this.store.dispatch([new StartWebsocketConnection(), new Load()]);
 
     switch (this.department) {
-      case DepartmentType.Magazyn:
-        this.entryExitPairRecords$ = this.store.select(
-          RogerState.getGroupedRecordsForHall
-        );
-        break;
       case DepartmentType.Produkcja:
         this.entryExitPairRecords$ = this.store.select(
           RogerState.getGroupedRecordsForProduction
+        );
+        break;
+      case DepartmentType.Magazyn:
+        this.entryExitPairRecords$ = this.store.select(
+          RogerState.getGroupedRecordsForManager
         );
         break;
     }
