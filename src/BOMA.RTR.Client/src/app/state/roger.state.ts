@@ -172,8 +172,16 @@ export class RogerState {
   }
 
   private filterRecords(records: RecordModel[]) {
-    return records.filter(
-      x => ![6, 0].includes(new Date(x.date).getDay()) // Dodanie warunku odfiltrowania sobót i niedziel
-    );
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3000);
+
+    return records.filter(record => {
+      const recordDate = new Date(record.date);
+
+      return (
+        // Filtruj zapisy z ostatnich 3 dni oraz pomijając soboty i niedziele
+        recordDate >= threeDaysAgo && ![6, 0].includes(recordDate.getDay())
+      );
+    });
   }
 }
