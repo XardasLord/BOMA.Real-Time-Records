@@ -79,6 +79,8 @@ export class RogerState {
       return acc;
     }, {});
 
+    const today = new Date().toDateString();
+
     const resultRecords = Object.values(groupedRecords).map(group => {
       const entry = group.find(
         record => record.eventType === RecordEventType.Entry
@@ -87,12 +89,38 @@ export class RogerState {
         record => record.eventType === RecordEventType.Exit
       );
 
+      // Remove exit records for today's day if entry record is newer
+      const entryDateTime = entry
+        ? new Date(`${entry?.date.split('T')[0]}T${entry.time}`)
+        : null;
+
+      const exitDateTime = exit
+        ? new Date(`${exit?.date.split('T')[0]}T${exit.time}`)
+        : null;
+
+      const isSameDay =
+        entryDateTime?.toDateString() === exitDateTime?.toDateString();
+      const isToday = entryDateTime?.toDateString() === today;
+
+      let exitDate = '';
+      let exitTime = '';
+
+      // Ustawiaj datę i czas wyjścia tylko jeśli data wejścia nie jest wcześniejsza niż data wyjścia
+      if (
+        !isToday ||
+        !isSameDay ||
+        (entryDateTime && exitDateTime && entryDateTime < exitDateTime)
+      ) {
+        exitDate = exit?.date || '';
+        exitTime = exit?.time || '';
+      }
+
       return {
         userRcpId: group[0].userRcpId,
         entryDate: entry ? entry.date : '',
         entryTime: entry ? entry.time : '',
-        exitDate: exit ? exit.date : '',
-        exitTime: exit ? exit.time : '',
+        exitDate: exitDate,
+        exitTime: exitTime,
       };
     });
 
