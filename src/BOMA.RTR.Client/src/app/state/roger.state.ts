@@ -96,26 +96,17 @@ export class RogerState {
       };
     });
 
-    // Sorting by entry datetime desc firstly
+    // Sorting from the newest to the oldest records
     resultRecords.sort((a, b) => {
-      const datePartA = a.entryDate.split('T')[0];
-      const datePartB = b.entryDate.split('T')[0];
+      const aMaxDate = a.exitDate.split('T')[0] || a.entryDate.split('T')[0];
+      const bMaxDate = b.exitDate.split('T')[0] || b.entryDate.split('T')[0];
+      const aMaxTime = a.exitTime.split('T')[0] || a.entryTime.split('T')[0];
+      const bMaxTime = b.exitTime.split('T')[0] || b.entryTime.split('T')[0];
 
-      const dateTimeA = new Date(`${datePartA}T${a.entryTime}`);
-      const dateTimeB = new Date(`${datePartB}T${b.entryTime}`);
+      const aDateTime = new Date(`${aMaxDate} ${aMaxTime}`);
+      const bDateTime = new Date(`${bMaxDate} ${bMaxTime}`);
 
-      return dateTimeB.getTime() - dateTimeA.getTime();
-    });
-
-    // Sorting by exit datetime desc lastly
-    resultRecords.sort((a, b) => {
-      const datePartA = a.exitDate.split('T')[0];
-      const datePartB = b.exitDate.split('T')[0];
-
-      const dateTimeA = new Date(`${datePartA}T${a.exitTime}`);
-      const dateTimeB = new Date(`${datePartB}T${b.exitTime}`);
-
-      return dateTimeB.getTime() - dateTimeA.getTime();
+      return bDateTime.getTime() - aDateTime.getTime();
     });
 
     // Converting to [][] array
@@ -173,7 +164,7 @@ export class RogerState {
 
   private filterRecords(records: RecordModel[]) {
     const threeDaysAgo = new Date();
-    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3000);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
     return records.filter(record => {
       const recordDate = new Date(record.date);
