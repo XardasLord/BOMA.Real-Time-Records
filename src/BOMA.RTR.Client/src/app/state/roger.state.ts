@@ -124,7 +124,7 @@ export class RogerState {
     return this.httpClient
       .get<RecordModel[]>(`${environment.apiEndpoint}/entryExitTimes`)
       .pipe(
-        map(x => this.filterRecords(x, 1)),
+        map(x => this.filterRecords(x)),
         tap(records => {
           ctx.setState(
             patch({
@@ -143,7 +143,7 @@ export class RogerState {
 
   @Action(Changed)
   changed(ctx: StateContext<RogerStateModel>, action: Changed) {
-    const records = this.filterRecords(action.records, 1);
+    const records = this.filterRecords(action.records);
 
     ctx.setState(
       patch({
@@ -158,16 +158,34 @@ export class RogerState {
     );
   }
 
-  private filterRecords(records: RecordModel[], howManyPastDayShow: number) {
-    const daysAgo = new Date();
-    daysAgo.setDate(daysAgo.getDate() - howManyPastDayShow);
+  private filterRecords(records: RecordModel[]) {
+    const currentDateTime = new Date();
+    const currentDayWithTimeReset = new Date(
+      currentDateTime.getFullYear(),
+      currentDateTime.getMonth(),
+      currentDateTime.getDate(),
+      5,
+      0,
+      0
+    );
+
+    let startingDateTime;
+    if (currentDateTime >= currentDayWithTimeReset) {
+      startingDateTime = currentDayWithTimeReset;
+    } else {
+      startingDateTime = new Date(currentDayWithTimeReset);
+      startingDateTime.setDate(startingDateTime.getDate() - 1);
+    }
 
     return records.filter(record => {
-      const recordDate = new Date(record.date);
+      const recordDateTime = new Date(
+        `${record.date?.split('T')[0]} ${record.time}`
+      );
 
       return (
         // Exclude Saturdays and Sundays
-        recordDate >= daysAgo && ![6, 0].includes(recordDate.getDay())
+        recordDateTime >= startingDateTime &&
+        ![6, 0].includes(recordDateTime.getDay())
       );
     });
   }
