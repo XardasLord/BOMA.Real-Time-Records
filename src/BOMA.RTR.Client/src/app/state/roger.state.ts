@@ -110,14 +110,10 @@ export class RogerState {
     });
 
     // Converting to [][] array
-    const transformedRecords: EntryExitRecordsGrouped[][] = [[], []];
+    const transformedRecords: EntryExitRecordsGrouped[][] = [[], [], []];
 
     resultRecords.forEach((record, index) => {
-      if (index % 2 === 0) {
-        transformedRecords[0].push(record);
-      } else {
-        transformedRecords[1].push(record);
-      }
+      transformedRecords[index % 3].push(record);
     });
 
     return transformedRecords;
@@ -128,7 +124,7 @@ export class RogerState {
     return this.httpClient
       .get<RecordModel[]>(`${environment.apiEndpoint}/entryExitTimes`)
       .pipe(
-        map(x => this.filterRecords(x)),
+        map(x => this.filterRecords(x, 1)),
         tap(records => {
           ctx.setState(
             patch({
@@ -147,7 +143,7 @@ export class RogerState {
 
   @Action(Changed)
   changed(ctx: StateContext<RogerStateModel>, action: Changed) {
-    const records = this.filterRecords(action.records);
+    const records = this.filterRecords(action.records, 1);
 
     ctx.setState(
       patch({
@@ -162,16 +158,16 @@ export class RogerState {
     );
   }
 
-  private filterRecords(records: RecordModel[]) {
-    const threeDaysAgo = new Date();
-    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  private filterRecords(records: RecordModel[], howManyPastDayShow: number) {
+    const daysAgo = new Date();
+    daysAgo.setDate(daysAgo.getDate() - howManyPastDayShow);
 
     return records.filter(record => {
       const recordDate = new Date(record.date);
 
       return (
-        // Filtruj zapisy z ostatnich 3 dni oraz pomijając soboty i niedziele
-        recordDate >= threeDaysAgo && ![6, 0].includes(recordDate.getDay())
+        // Exclude Saturdays and Sundays
+        recordDate >= daysAgo && ![6, 0].includes(recordDate.getDay())
       );
     });
   }
